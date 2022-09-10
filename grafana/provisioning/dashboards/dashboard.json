@@ -1,0 +1,558 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Paradise - weather station",
+  "editable": true,
+  "panels": [
+    {
+      "datasource": "InfluxDB",
+      "fill": 5,
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": true,
+        "rightSide": true,
+        "show": true,
+        "sideWidth": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "percentage": false,
+      "renderer": "flot",
+      "stack": false,
+      "targets": [
+        {
+          "alias": "wind speed 1",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "from(bucket: \"primary\")\n |> range(start: 2022-04-01T01:00:00.000Z)\n |> filter(fn: (r) => r._measurement == \"wind_speed\")",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Wind Speed",
+      "type": "graph",
+      "xaxis": {
+        "mode": "time",
+        "show": true
+      }
+    },
+    {
+      "datasource": "InfluxDB",
+      "fill": 5,
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 3,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": true,
+        "rightSide": true,
+        "show": true,
+        "sideWidth": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "percentage": false,
+      "renderer": "flot",
+      "stack": false,
+      "targets": [
+        {
+          "alias": "wind speed 2",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "from(bucket: \"primary\")\n |> range(start: 2022-04-01T01:00:00.000Z)\n |> filter(fn: (r) => r._measurement == \"wind_speed_2\")",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Wind Speed 2",
+      "type": "graph",
+      "xaxis": {
+        "mode": "time",
+        "show": true
+      }
+    },
+    {
+      "datasource": "InfluxDB",
+      "fill": 5,
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 3,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": true,
+        "rightSide": true,
+        "show": true,
+        "sideWidth": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "percentage": false,
+      "renderer": "flot",
+      "stack": false,
+      "targets": [
+        {
+          "alias": "humidity 1",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "from(bucket: \"primary\")\n |> range(start: 2022-04-01T01:00:00.000Z)\n |> filter(fn: (r) => r._measurement == \"humidity\")",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Humidity",
+      "type": "graph",
+      "xaxis": {
+        "mode": "time",
+        "show": true
+      }
+    },
+    {
+      "datasource": "InfluxDB",
+      "fill": 5,
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 4,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": true,
+        "rightSide": true,
+        "show": true,
+        "sideWidth": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "percentage": false,
+      "renderer": "flot",
+      "stack": false,
+      "targets": [
+        {
+          "alias": "humidity 2",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "from(bucket: \"primary\")\n |> range(start: 2022-04-01T01:00:00.000Z)\n |> filter(fn: (r) => r._measurement == \"humidity_2\")",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Humidity 2",
+      "type": "graph",
+      "xaxis": {
+        "mode": "time",
+        "show": true
+      }
+    },
+    {
+      "datasource": "InfluxDB",
+      "fill": 5,
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 5,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": true,
+        "rightSide": true,
+        "show": true,
+        "sideWidth": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "percentage": false,
+      "renderer": "flot",
+      "stack": false,
+      "targets": [
+        {
+          "alias": "leaf wetness 1",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "from(bucket: \"primary\")\n |> range(start: 2022-04-01T01:00:00.000Z)\n |> filter(fn: (r) => r._measurement == \"leaf_wetness\")",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Leaf Wetness",
+      "type": "graph",
+      "xaxis": {
+        "mode": "time",
+        "show": true
+      }
+    },
+    {
+      "datasource": "InfluxDB",
+      "fill": 5,
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 6,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": true,
+        "rightSide": true,
+        "show": true,
+        "sideWidth": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "percentage": false,
+      "renderer": "flot",
+      "stack": false,
+      "targets": [
+        {
+          "alias": "leaf wetness 2",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "from(bucket: \"primary\")\n |> range(start: 2022-04-01T01:00:00.000Z)\n |> filter(fn: (r) => r._measurement == \"leaf_wetness_2\")",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Leaf Wetness 2",
+      "type": "graph",
+      "xaxis": {
+        "mode": "time",
+        "show": true
+      }
+    },
+    {
+      "datasource": "InfluxDB",
+      "fill": 5,
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 7,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": true,
+        "rightSide": true,
+        "show": true,
+        "sideWidth": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "percentage": false,
+      "renderer": "flot",
+      "stack": false,
+      "targets": [
+        {
+          "alias": "rain",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "from(bucket: \"primary\")\n |> range(start: 2022-04-01T01:00:00.000Z)\n |> filter(fn: (r) => r._measurement == \"rain\")",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Rain",
+      "type": "graph",
+      "xaxis": {
+        "mode": "time",
+        "show": true
+      }
+    },
+    {
+      "datasource": "InfluxDB",
+      "fill": 5,
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 8,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": true,
+        "rightSide": true,
+        "show": true,
+        "sideWidth": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "percentage": false,
+      "renderer": "flot",
+      "stack": false,
+      "targets": [
+        {
+          "alias": "solar",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "from(bucket: \"primary\")\n |> range(start: 2022-04-01T01:00:00.000Z)\n |> filter(fn: (r) => r._measurement == \"solar\")",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Solar",
+      "type": "graph",
+      "xaxis": {
+        "mode": "time",
+        "show": true
+      }
+    },
+    {
+      "datasource": "InfluxDB",
+      "fill": 5,
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 9,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": true,
+        "rightSide": true,
+        "show": true,
+        "sideWidth": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "percentage": false,
+      "renderer": "flot",
+      "stack": false,
+      "targets": [
+        {
+          "alias": "temperature 1",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "from(bucket: \"primary\")\n |> range(start: 2022-04-01T01:00:00.000Z)\n |> filter(fn: (r) => r._measurement == \"temperature\")",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Temperature",
+      "type": "graph",
+      "xaxis": {
+        "mode": "time",
+        "show": true
+      }
+    },
+    {
+      "datasource": "InfluxDB",
+      "fill": 5,
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 10,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": true,
+        "rightSide": true,
+        "show": true,
+        "sideWidth": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "percentage": false,
+      "renderer": "flot",
+      "stack": false,
+      "targets": [
+        {
+          "alias": "temperature 2",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "from(bucket: \"primary\")\n |> range(start: 2022-04-01T01:00:00.000Z)\n |> filter(fn: (r) => r._measurement == \"temperature_2\")",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Temperature 2",
+      "type": "graph",
+      "xaxis": {
+        "mode": "time",
+        "show": true
+      }
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 18,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "2022-04-01T01:00:00.000Z",
+    "to": "2022-06-28T01:00:00.000Z"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ],
+    "time_options": [
+      "5m",
+      "15m",
+      "1h",
+      "6h",
+      "12h",
+      "24h",
+      "2d",
+      "7d",
+      "30d"
+    ]
+  },
+  "timezone": "",
+  "title": "Paradise - weather station",
+  "version": 1
+}

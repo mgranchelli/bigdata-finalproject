@@ -1,0 +1,30 @@
+# config file version
+apiVersion: 1
+
+deleteDatasources:
+  - name: InfluxDB
+    orgId: 1
+
+datasources:
+  - name: InfluxDB
+    type: "influxdb"
+    access: "proxy"
+    url: "http://influx:8086"
+    orgId: 1
+    basicAuth: true
+    basicAuthUser: "admin"
+    withCredentials: false
+    isDefault: true
+    jsonData:
+      defaultBucket: "primary"
+      httpMode: "POST"
+      organization: "primary"
+      version: "Flux"
+    secureJsonFields:
+      basicAuthPassword: true
+      token: true
+    secureJsonData:
+      token: 2c83186a-caab-425a-9594-9d4c00544939
+      basicAuthPassword: password
+    version: 1
+    editable: true

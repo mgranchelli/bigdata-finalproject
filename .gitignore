@@ -1,0 +1,14 @@
+iot-data-producer/*
+
+!iot-producer.py
+!start-producer.sh
+!Dockerfile
+
+influxd.*
+
+test.txt
+
+report/
+# report/src/*
+# !report/src/*.tex
+# !report/src/images
