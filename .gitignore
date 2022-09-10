@@ -8,7 +8,6 @@ influxd.*
 
 test.txt
 
-report/
-# report/src/*
-# !report/src/*.tex
-# !report/src/images
+report/src/*
+!report/src/*.tex
+!report/src/images
