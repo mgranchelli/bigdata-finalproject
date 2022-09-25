@@ -1,6 +1,5 @@
 from __future__ import print_function
 from cmath import inf
-from statistics import mean
 
 from pyspark.sql import SparkSession, Row
 from pyspark.sql.types import StructType, StructField, FloatType, IntegerType, StringType, ArrayType
