@@ -17,6 +17,8 @@
 \usepackage{float}
 \usepackage{enumitem}
 \hypersetup{hidelinks}
+% Sillabazione italiana
+\usepackage[italian]{babel}
 %\usepackage{authblk}
 % Json format
 %\usepackage{bera}% optional: just to have a nice mono-spaced font
@@ -98,9 +100,10 @@
 \end{flushleft}
 
 \section*{Introduzione}
-In questo rapporto verranno illustrate le procedure di analisi, elaborazione, salvataggio e visualizzazione di dati catturati da sensori IoT installati in un campo di peschi. Non avendo accesso diretto ai sensori sul campo, i dati sono stati raccolti in file formato JSON, un file per ogni sensore, e tramite uno script Python è stato simulato il flusso streaming dei dati inviati dai sensori.
-Lo script che genera il flusso di dati e tramite Kafka invia messaggi a Spark Streaming che si occupa di processare i dati. Una volta processati i dati vengono salvati all'interno di un Time Series Database (TSDB), questo perchè i dati prodotti dai sensori IoT sono tutti associati ad un timestamp e sono dati che devono essere monitorati nel tempo. I Time Series Database (TSDB) si prestano molto bene per essere utilizzati in queste situazioni. Nel seguente progetto si è scelto di utilizzare InfluxDB. \\
-I dati memorizzati vengono a loro volta letti da Grafana che è uno strumento di visualizzazione di serie temporali. Grafana è accessibile via browser ed è possibile generare una dashboard contenente i grafici dei dati memorizzati su InfluxDB. \\
+In questo rapporto verranno illustrate le procedure di analisi, elaborazione, salvataggio e visualizzazione di dati catturati da sensori IoT installati in un campo di peschi. La strategia che usa le tecnologie dell'informazione per acquisire e monitorare i dati finalizzati alle decisioni per la produzione agricola è chiamata Agricoltura di Precisione. Lo scopo è quello di migliorare la produzione, minimizzare i danni ambientali ed elevare gli standard qualitativi dei prodotti agricoli.\\
+Nel seguente caso, non avendo accesso diretto ai sensori sul campo, i dati sono stati raccolti per ogni sensore in un file diverso in formato JSON e tramite uno script Python è stato simulato il flusso streaming dei dati inviati dai sensori.
+Lo script genera il flusso di dati e tramite Kafka invia messaggi a Spark Streaming che si occupa di processare i dati. Una volta processati i dati vengono salvati all'interno di un Time Series Database (TSDB). Questo perchè i dati prodotti dai sensori IoT sono tutti associati ad un timestamp e sono dati che devono essere monitorati nel tempo. I Time Series Database (TSDB) si prestano molto bene per essere utilizzati in queste situazioni e nel seguente progetto si è scelto di utilizzare InfluxDB. \\
+I dati memorizzati vengono a loro volta letti da Grafana che è uno strumento di visualizzazione di serie temporali. Grafana è accessibile via browser dove è presente la dashboard contenente i grafici per monitorare i dati dei sensori memorizzati su InfluxDB. \\
 L'architettura utilizzata in questo progetto è stata testata utilizzando docker compose che permette di realizzare applicazioni composte da più contenitori che comunicano tra di loro. Ogni contenitore è stato creato per svolgere una determinata attività con una determinata tecnologia. \\
 Tutto il materiale utilizzato è disponibile nel repo GitHub:\\ \href{https://github.com/mgranchelli/bigdata-finalproject}{https://github.com/mgranchelli/bigdata-finalproject}.
 
@@ -140,9 +143,9 @@ Nel dettaglio:
   \item (\textbf{leaf\_wetness}, \textbf{leaf\_wetness2}): Bagnatura fogliare, inviano dati relativi alle condizioni di bagnatura delle superfici fogliari (rileva condensazione di particelle d'acqua sulla superficie delle foglie). I dati raccolti sono: bagnatura grezza superiore (top\_page\_raw) e inferiore delle foglie (bottom\_page\_raw) e bagnatura in percentuale superiore (top\_page\_perc) e inferiore delle foglie (bottom\_page\_perc).
   \item \textbf{rain\_sensor}: Pluviometro, invia dati relativi la pioggia (rain).
   \item \textbf{solar\_radiation}: Radiometro, invia dati relativi ai raggi solari (solar).
-  \item (\textbf{thermometer}, \textbf{thermometer2}): Termo-igrometro, invia dati relativi alla temperatura. I dati raccolti sono: temperatura minima (temperature\_min) e massima (temperature\_max).
+  \item (\textbf{thermometer}, \textbf{thermometer2}): Termo-igrometri, inviano dati relativi alla temperatura. I dati raccolti sono: temperatura minima (temperature\_min) e massima (temperature\_max).
 \end{itemize}
-\textbf{Esempio di file JSON}:
+\textbf{Esempio di file JSON (anemometer)}:
 \begin{lstlisting}[language=json,firstnumber=1]
 {
     "wind_speed_max": [
@@ -166,9 +169,9 @@ Nel dettaglio:
 }
 \end{lstlisting}
 
-In ogni file JSON sono presenti i dati raccolti con le chiavi sopra citate. Per ogni chiave ci sono due valori: uno è il timestamp (ts) e l'altro è il valore catturato dal sensore (value). I dati a disposizioni sono stati raccolti nel periodo che va dal \date{01/04/2022}, al \date{27/04/2022}. 
+In ogni file JSON sono presenti i dati raccolti con le chiavi sopra citate. Per ogni chiave ci sono due valori: uno è il timestamp (ts) e l'altro è il valore catturato dal sensore (value). I dati a disposizioni sono stati raccolti nel periodo che va dal \date{01/04/2022}, al \date{27/06/2022}. 
 
-I sensori inviano i dati ogni 15 minuti, quindi i dati presenti nei file JSON hanno intervalli di 15 minuti. I ogni file i dati sono stati raccolti a intervalli di 15 minuti tranne per i sensori di bagnatura fogliare dove i dati sono stati raccolti ogni minuto.
+I sensori inviano i dati ogni 15 minuti, quindi i dati presenti nei file JSON hanno intervalli di 15 minuti, tranne che per i sensori di bagnatura fogliare che inviano dati ogni minuto.
 
 \newpage
 \section{Architettura e tecnologie usate}
@@ -187,21 +190,23 @@ Nella seguente figura è possibile osservare schematicamente l'architettura del 
 \noindent
 Come rappresentato nella figura precedente, il sistema è composto principalmente da 5 blocchi:
 \begin{itemize}[noitemsep]
-  \item \textbf{IoT data producer}: sensori installati nel campo di peschi, i quali rilevano dati con una diversa frequenza, come riportato in precedenza nel capitolo 1, che vengono inviati al blocco successivo. Come detto in precedenza, non avendo acceso diretto ai sensori e avendo a disposizione file JSON con i dati raccolti, in questo blocco è stato simulato l'invio dei dati dei sensori.
+  \item \textbf{IoT data producer}: sensori installati nel campo di peschi, i quali rilevano dati con una diversa frequenza, come riportato in precedenza nel capitolo 1, che vengono inviati al blocco successivo. Come detto in precedenza, non avendo acceso diretto ai sensori e avendo a disposizione file JSON con i dati raccolti, in questo blocco è stato simulato l'invio dei dati dai sensori.
   \item \textbf{Messaging Layer}: si occupa di memorizzare i dati provenienti dai sensori e li fornisce al blocco successivo.
   \item \textbf{Processing Layer}: processa in real time i dati provenienti dal messaging layer.
   \item \textbf{Storage Layer}: memorizza i dati processati dal blocco precedente.
   \item \textbf{Visualizzation Layer}: visualizza i dati salvati in real time.
 \end{itemize}
-Grazie a docker, i cinque blocchi sono stati fatti partire su 5 container separati. Per il primo blocco, relativo alla simulazione dei sensori IoT, è stato creato un Dockerfile nel quale è stato definito il container e successivamente è stata creata l'immagine contenente il container. Per gli altri blocchi sono state utilizzate delle immagini di container già esistenti nel \href{https://hub.docker.com} {\textbf{Docker Hub Container Image Library}}.\\
+Grazie a docker, i cinque blocchi sono stati fatti partire su 5 container separati. \\
+Per il primo blocco, relativo alla simulazione dei sensori IoT, è stato creato un Dockerfile nel quale è stato definito il container e successivamente è stata creata l'immagine contenente il container. Per gli altri blocchi sono state utilizzate delle immagini di container già esistenti nel \href{https://hub.docker.com} {\textbf{Docker Hub Container Image Library}}.\\
 Le variabili d'ambiente necessarie per il corretto funzionamento dei container sono state definite all'interno del file \texttt{docker-compose.yml}.\\
 Una volta scaricate le immagini dei container e definite le variabili d'ambiente, il tutto è stato fatto partire con lo script \texttt{start-compose.sh} presente all'interno della cartella \textit{script}. Nella stessa cartella è presente anche lo script \texttt{stop-compose.sh} per interrompere l'esecuzione dei container.
 
 \subsection{Dati da sensori IoT}
-Il primo container realizzato è stato quello per i sensori IoT. Come detto in precedenza, non avendo accesso diretto ai sensori l'invio dei dati è stato simulato mediante un container docker.
+Il primo container realizzato è stato quello per i sensori IoT. Come riportato in precedenza, non avendo accesso diretto ai sensori l'invio dei dati è stato simulato mediante un container docker. I file e gli script necessari per il funzionamento del seguente container sono presenti all'interno della cartella \textit{iot-data-producer}.\\
 Il container è stato definito all'interno del file \textbf{Dockerfile}. Per leggere i dati e trasmetterli al messaging layer (realizzato usando Kafka), è stato utilizzato uno script Python, quindi nel Dockerfile è stata definita l'ultima versione di Python da installare nel container e il package \textit{kafka-python} che consiste in un client Kafka per il linguaggio Python, il quale permette allo script di interagire con Kafka.
 Una volta definito il file Dockerfile, l'immagine del container è stata generata mediante lo script \textit{build-iot-container} presente all'interno della cartella script.\\
-Il file Python scritto per leggere ed inviare i dati a Kafka prende in input il nome del file in formato JSON da leggere e inizializza il producer per inviare i dati al container nel quale è in esecuzione Kafka (raggiungibile all'endpoint \textit{kafka:9093}). Successivamente legge in file JSON, inizializza le chiavi del file in una lista e scorre il file al contrario (questo perchè l'ultima riga è il dato memorizzato più recente). Come visto in precedenza il file ha per ogni chiave un valore e un timestamp. La chiave rappresenta i diversi dati raccolti da un unico sensore, quindi nello stesso istante di tempo il sensore invia più dati. Per poter simulare questo si scorre la lista delle chiavi e si effettuano dei controlli sul nome delle chiavi e sul nome del file perchè ci possono essere sensori chiamati uguali, che inviano dati con le stesse chiavi ma che possono essere installati su punti diversi. Quindi, per ogni riga di ogni chiave del file vengono generate due liste nelle quali, in una vengono inserite le chiavi e nell'altra, seguendo l'ordine delle chiavi inserite nella precedente, vengono inseriti i valori. Il timestamp essendo lo stesso viene inserito in una variabile. Dalle due liste e dal valore del timestamp viene generato un messaggio convertito in una stringa JSON. Il producer definito in precedenza si occupa di inviare il messaggio contenente la stringa JSON e il nome del file letto a Kafka. I dati vengono inviati a Kafka ad intervalli di 5 secondi. Il nome del file letto viene utilizzato da Kafka per creare topic differenti sui quali andare a memorizzare i messaggi provenenti dal seguente container. In questo caso sono stati definiti 10 topic avendo a disposizione 10 file differenti.\\
+Lo script Python realizzato per leggere ed inviare i dati a Kafka, prende in input il nome del file in formato JSON da leggere e inizializza il producer per inviare i dati al container nel quale è in esecuzione Kafka (raggiungibile all'endpoint \textit{kafka:9093}). Successivamente legge il file JSON, inizializza le chiavi presenti nel file in una lista e scorre i valori delle chiavi al contrario (questo perchè l'ultima riga è il dato memorizzato più recente). Come visto in precedenza il file ha per ogni chiave un valore e un timestamp. La chiave rappresenta i diversi dati raccolti da un unico sensore, quindi nello stesso istante di tempo il sensore invia più dati. Lo script effettua anche dei controlli sul nome delle chiavi e sul nome del file perchè ci possono essere sensori chiamati uguali, che inviano dati con le stesse chiavi ma che possono essere installati su punti diversi. Quindi, per ogni riga di ogni chiave del file vengono generate due liste nelle quali, in una vengono inserite le chiavi e nell'altra, seguendo lo stesso ordine, vengono inseriti i valori. Il timestamp essendo lo stesso viene inserito in una variabile. Dalle due liste e dal valore del timestamp viene generato un messaggio convertito in una stringa JSON. \\
+Il producer definito in precedenza si occupa di inviare il messaggio contenente la stringa JSON e il nome del file letto a Kafka. I dati vengono inviati a Kafka ad intervalli di 5 secondi. Il nome del file letto viene utilizzato da Kafka per creare topic differenti sui quali andare a memorizzare i messaggi provenenti dal seguente container. In questo caso sono stati definiti 10 topic avendo a disposizione 10 file differenti.\\
 L'invio in parallelo dei dati da tutti i sensori è stato realizzato mediante lo script \textit{start-producer.sh} presente all'interno della cartella script, che richiama per ogni file JSON lo script Python descritto e al quale viene passato il nome di ogni file. 
 
 \subsubsection{Pseudocodice}
@@ -238,9 +243,9 @@ L'invio in parallelo dei dati da tutti i sensori è stato realizzato mediante lo
 
 \subsubsection{Log - Output}
 \begin{figure}[H]
-\includegraphics[width=1\linewidth]{Output-spark-1}
+\includegraphics[width=1\linewidth]{Output-producer}
 \centering
-\caption*{Output producer script}
+\caption*{Output script iot-producer}
 \label{fig:bytepost}
 \end{figure}
 
@@ -251,10 +256,11 @@ In particolare i messaggi provenienti da diversi sensori, in questo caso da dive
 Occorre ricordare che per poter funzionare Kafka ha bisogno Zookeeper, il quale è un servizio di sincronizzazione per grandi sistemi distribuiti. Nel seguente progetto Zookeeper è stato configurato ed eseguito su un altro container raggiungibile all'endpoint \textit{zookeeper:2181} e per il corretto funzionamento di Kafka è stata aggiunta la variabile d'ambiente \texttt{KAFKA\_ZOOKEEPER\_CONNECT=zookeeper:2181} che permette a Kafka di collegarsi al container nel quale è in esecuzione Zookeeper.
 
 \subsection{Processing Layer}
-I dati memorizzati su Kafka vengono inviati ad un cluster di container Spark composto da un container master e da un container worker. Per processare i dati è stato utilizzato Spark Streaming. Lo script è stato scritto in Python. Nello script è stata inizializzata la SparkSession e vengono definiti i topic da leggere. Lo script si mette in ascolto del container Kafka (kafka:9093) e quando il container dei sensori invia un nuovo dato, Kafka trasmette il messaggio e viene letto lo streaming di dati. I dati vengono salvati su un DataFrame e per poter ottenere le chiavi, i valori e il timestamp occorre effettuare una decodifica del DataFrame. Per questa operazione è stato definito un messageSchema che descrive con i tipi i campi del messaggio ricevuto e ne permette la decodifica.\\
-I dati ricevuti vengono letti in batch di diversa dimensione, in un batch possono essere presenti dati provenienti da più sensori. Per questo motivo viene eseguito un foreach per ogni batch ricevuto e viene richiamata la classe \texttt{InfluxDBWriter}. I dati una volta processati vengono salvati su uno storage layer che consiste in un container su cui è installato InfluxDB. Il salvataggio dei dati prodotti avviene utilizzando il package Python \textit{influxdb\_client}. La classe \texttt{InfluxDBWriter} si occupa di inizializzare la connessione con il database raggiungibile all'endpoint influx:8086 e di processare le righe del batch passate in input. Viene eseguito un controllo sulle chiavi che riceve e in base ad esse viene calcolato il valore medio. Ad esempio, nel caso delle chiavi: \texttt{wind\_speed\_min}, \texttt{wind\_speed\_max} e \texttt{wind\_dir}, viene calcolato il valore medio tra i valori \texttt{wind\_speed\_min} e \texttt{wind\_speed\_max}.\\
-Inoltre, è stato inserito un controllo sul valore medio dell'umidità. Questo valore, insieme ai valori relativi alla bagnatura fogliare, devono essere tenuti sotto controllo perchè se superiori ad una certa soglia potrebbero provocare l'attacco di bolla sulle piante di pesco. Nel seguente caso è stato inserito un valore di test perchè al momento non ci sono abbastanza dati per stabilire con certezza la soglia.
-Come si può osservare dalla figura, in console viene stampato un messaggio di warning.
+I dati memorizzati su Kafka vengono inviati ad un cluster di container Spark composto da un container master e da un container worker. Per processare i dati è stato utilizzato Spark Streaming. Lo script è stato scritto in Python. Nello script è stata inizializzata la SparkSession e sono stati definiti i topic da leggere. Lo script si mette in ascolto del container Kafka (kafka:9093) e quando il container dei sensori invia un nuovo dato, Kafka trasmette il messaggio e viene letto lo streaming di dati. I dati vengono salvati su un DataFrame e per poter ottenere le chiavi, i valori e il timestamp occorre effettuare una decodifica del DataFrame. Per questa operazione è stato definito un \textit{messageSchema} che descrive con i tipi i campi del messaggio ricevuto e ne permette la decodifica.\\
+I dati ricevuti vengono letti in batch di diversa dimensione e in un batch possono essere presenti dati provenienti da più sensori. Per questo motivo viene eseguito un foreach per ogni batch ricevuto e viene richiamata la classe \texttt{InfluxDBWriter}. I dati una volta processati vengono salvati su uno storage layer che consiste in un container su cui è installato InfluxDB. Il salvataggio dei dati prodotti avviene utilizzando il package Python \textit{influxdb\_client}.\\ 
+La classe \texttt{InfluxDBWriter} si occupa di inizializzare la connessione con il database raggiungibile all'endpoint influx:8086 e di processare le righe del batch passate in input. Viene eseguito un controllo sulle chiavi che riceve e in base ad esse viene calcolato il valore medio. Ad esempio, nel caso delle chiavi: \texttt{wind\_speed\_min}, \texttt{wind\_speed\_max} e \texttt{wind\_dir}, viene calcolato il valore medio tra i valori \texttt{wind\_speed\_min} e \texttt{wind\_speed\_max}.\\
+Inoltre, è stato inserito un controllo sul valore medio dell'umidità. Questo valore, insieme ai valori relativi alla bagnatura fogliare, devono essere tenuti sotto controllo perchè se superiori ad una certa soglia potrebbero provocare l'attacco di bolla sulle piante di pesco. Per le piante di pesco l'attacco di bolla è una delle malattie più diffuse. Nel seguente caso è stato inserito un valore di test per l'umidità perchè al momento non ci sono abbastanza dati per stabilire con certezza le soglie dei valori.
+Come si può osservare in seguito dalla figura di output, se il valore dell'umidità è superiore la soglia viene stampato un messaggio di avviso in console. \\
 Infine, i dati processati vengono salvati sullo storage layer.\\
 Per poter installare il package \textit{influxdb\_client} nel container Spark e lanciare il seguente script Python è stato utilizzato lo script \textit{start-spark.sh} presente all'interno della cartella script.
 
@@ -318,9 +324,9 @@ Per poter installare il package \textit{influxdb\_client} nel container Spark e 
 
  
 \subsection{Storage Layer}
-I dati processati da Spark Streaming vengono salvati all'interno di InfluxDB.
+I dati processati da Spark Streaming vengono salvati all'interno di InfluxDB. 
 InfluxDB è un base di dati che appartiene alla categoria dei \textit{Time Series Database (TSDB)}, ovvero una tipologia di database ottimizzati per \textit{time series data}. I time series data sono dati o eventi che vengono registrati, aggregati e monitorati nel tempo, come ad esempio la quantità di CPU e RAM usata in un server, i dati provenienti da sensori e così via.
-In un Time Series Database i dati memorizzati sono associati ad un timestamp ed è ottimizzato per misurare i cambiamenti nel tempo di una data metrica (come ad esempio la percentuale di CPU utilizzata nell'esempio precedente).\\
+In un Time Series Database i dati memorizzati sono associati ad un timestamp e questa tipologia di database è ottimizzato per misurare i cambiamenti nel tempo di una data metrica (come ad esempio la percentuale di CPU utilizzata nell'esempio precedente).\\
 Nel seguente progetto i dati di partenza provengono da sensori e sono associati tutti ad un timestamp e per questo si è scelto di utilizzare un Time Series Database (TSDB) per memorizzare i dati prodotti da Spark Streaming.
 Nel panorama dei TSDB la scelta è poi ricaduta su InfluxDB perchè è compatibile con Grafana per la visualizzazione dei dati (descritto nella sezione successiva) e perchè tra i Time Series Database, secondo DB-Engines, si classifica al primo posto.
 
@@ -345,14 +351,14 @@ Concetti di base di InfluxDB:
 \noindent
 Si riporta di seguito una sequenza di dati di esempio rappresentati sia in un RDBMS che in InfluxDB:
 \begin{figure}[H]
-\includegraphics[width=0.5\linewidth]{Data-RDBMS}
+\includegraphics[width=0.55\linewidth]{Data-RDBMS}
 \centering
 \caption*{Dati rappresentati in un RDBMS}
 \label{fig:bytepost}
 \end{figure}
 
 \begin{figure}[H]
-\includegraphics[width=0.5\linewidth]{Data-InfluxDB}
+\includegraphics[width=0.55\linewidth]{Data-InfluxDB}
 \centering
 \caption*{Dati rappresentati in un InfluxDB}
 \label{fig:bytepost}
@@ -371,8 +377,9 @@ Con riferimento ad InfluxDB in questo esempio:
 Per ciascuna riga è presente una colonna aggiuntiva, di nome \texttt{time} che rappresenta un timestamp associato alla riga in questione.\\
 
 \noindent
-I dati processati da Spark Streaming sono stati salvati per sensore ciascuno in una measurement distinto. A ciascun measurement è stato associato un tag identificativo e i field della measurement corrispondono ai dati processati con Spark Streaming. Nel caso della measurement \textit{wind\_speed}, i field sono: \textit{Max}, \textit{Mean}, \textit{Min} e \textit{Dir}. 
-Inoltre, prima di salvare i dati all'interno di InfluxDB, sono state inserite alcune variabili d'ambiente necessarie per la scrittura dei dati e una volta salvati, alla lettura degli stessi.
+I dati processati da Spark Streaming sono stati salvati per sensore ciascuno in una measurement distinto. A ciascun measurement è stato associato un tag identificativo e i field della measurement corrispondono ai dati processati con Spark Streaming. Nel caso della measurement \textit{wind\_speed}, i field sono: \textit{Max}, \textit{Mean}, \textit{Min} e \textit{Dir}. \\
+Tutti i dati sono stati salvati all'interno del bucket \textit{primary}. Un bucket è la posizione dove vengono archiviati i dati delle serie temporali.
+Inoltre, sono state definite alcune variabili d'ambiente all'interno di \textit{docker-compose.yml} necessarie per accedere al container di InfluxDB, per la scrittura dei dati e una volta salvati, alla lettura degli stessi.
 
 
 
@@ -380,9 +387,22 @@ Inoltre, prima di salvare i dati all'interno di InfluxDB, sono state inserite al
 L'ultimo layer si occupa della visualizzazione dei dati memorizzati su InfluxDB. In questo layer è stato utilizzato Grafana.\\ 
 Grafana è uno strumento di visualizzazione di serie temporali, accessibile tramite browser, che supporta una serie di database da cui leggere i dati quali \textit{Graphite}, \textit{MySQL}, \textit{PostgreSQL}, \textit{ElasticSearch} e molti altri oltre al già citato InfluxDB.
 In particolare, grazie a Grafana è stata realizzata una \textit{dashboard} in cui sono state riportate le serie temporali associate ai sensori con i dati processati tramite Spark Streaming e memorizzati in InfluxDB. Nella dashboard sono stati inseriti 10 grafici, uno per ogni sensore, nei quali è possibile visualizzare i dati.\\
-Per poter accedere ai dati e visualizzarli sono stati utilizzati file di configurazione presenti all'interno della cartella \textit{grafana/provisioring}. Nel file datasource.yml sono stati configurati i parametri per accedere ai dati memorizzati nel container di InfluxDB e nel file dashboard.json sono stati configurati i 10 grafici con le relative query per ottenere i dati.\\
+Per poter accedere ai dati e visualizzarli sono stati generati due file di configurazione presenti all'interno della cartella \textit{grafana/provisioring}. Nel file \textbf{datasource.yml} sono stati configurati i parametri per accedere ai dati memorizzati nel container di InfluxDB e nel file \textbf{dashboard.json} sono stati configurati i 10 grafici con le relative query per ottenere i dati.\\
+Un esempio di query presente all'interno del file e utilizzata per ottenere il primo grafico riportato di seguito è:
+\begin{lstlisting}[language=json,firstnumber=1]
+{
+"query": "from(bucket: \"primary\") 
+|> range(start: 2022-04-01T01:00:00.000Z)
+|> filter(fn: (r) => r._measurement == \"wind_speed\")"
+}
+\end{lstlisting}
+La query seleziona dal bucket \textit{primary} tutti i dati relativi a \textit{wind\_speed} dalle \date{01:00} UTC del \date{2022-04-01}.
+
 Una volta fatto partire il container è possibile visualizzare i grafici su qualsiasi browser raggiungibili all'indirizzo \texttt{localhost:3000}.
 
+\newpage
+
+\noindent
 Si riporta di seguito istantanee della dashboard realizzata con i grafici:
 \begin{figure}[H]
 \includegraphics[width=1\linewidth]{WindSpeed-Graph}
@@ -420,7 +440,7 @@ Si riporta di seguito istantanee della dashboard realizzata con i grafici:
 \end{figure}
 
 \noindent
-Dai grafici si può osservare l'andamento dei dati raccolti, processati e memorizzati. In particolare, in ogni grafico è presente una sezione sulla parte destra del grafico che descrive i diversi dati raccolti in base al colore, ad esempio nell'ultimo grafico il colore verde rappresenta i dati relativi alla temperatura massima, ed è possibile selezionare un singolo dato e visualizzare l'andamento di esso. Sempre sulla sezione, per ogni dato visualizzato è presente il valore minimo, massimo, medio e l'ultimo valore salvato.
+Dai grafici si può osservare l'andamento dei dati raccolti, processati e memorizzati. In particolare, in ogni grafico è presente una sezione sulla parte destra del grafico che descrive i diversi dati raccolti in base al colore, ad esempio nell'ultimo grafico il colore verde rappresenta i dati relativi alla temperatura massima, ed è possibile selezionare un singolo dato e visualizzarne l'andamento. Sempre nella sezione a destra, per ogni dato visualizzato, è presente il valore minimo, massimo, medio e l'ultimo valore salvato.
 Dalle istantanee sulla dashboard è possibile anche osservare che i grafici relativi al bagnatura fogliare sono in ritardo rispetto agli altri grafici, questo perchè, come detto in precedenza, i dati relativi alla bagnatura fogliare sono molti di più perchè vengono inviati ogni minuto, al contrario degli altri sensori che inviano dati ogni 15 minuti. \\
 Inoltre, come riportato in figura sotto se viene passato il cursore del mouse sul grafico è possibile osservare nel dettaglio i valori nell'istante di tempo d'interesse.
 
@@ -435,9 +455,9 @@ Inoltre, come riportato in figura sotto se viene passato il cursore del mouse su
 \newpage
 
 \section{Conclusioni e Sviluppi futuri}
-In conclusione è stato realizzato un sistema di big data per il monitoraggio in tempo reale di dati provenienti da sensori installati in un campo di peschi. Nel seguente caso non avendo a disposizione molti dati, l'attacco di bolla è stato simulato inserendo un valore di test, ma in futuro con molti più dati si potranno effettuare controlli molto più precisi. Oltre all'attacco di bolla si potranno verificare anche altri fattori che possono influenzare lo stato di salute delle piante. Nel codice di Spark Streaming sono stati inseriti controlli per tutti i valori medi dei dati catturati dai sensori con le soglie impostate a $+\infty$. \\
-Un altro sviluppo futuro potrebbe essere quello di inserire un nuovo layer nell'architettura per eseguire analisi batch dei dati e dai dati raccolti, addestrare un modello di Machine Learning per monitorare lo stato di salute delle piante.
-
+In conclusione è stata realizzata un'architettura di big data per il monitoraggio in tempo reale di dati provenienti da sensori installati in un campo di peschi. Nel seguente caso non avendo a disposizione molti dati, l'attacco di bolla è stato simulato inserendo un valore di test, ma in futuro con molti più dati si potranno effettuare controlli molto più precisi. Oltre all'attacco di bolla si potranno verificare anche altri fattori che possono influenzare lo stato di salute delle piante.\\
+Inoltre, si potrebbe inserire un nuovo layer nell'architettura per eseguire analisi batch dei dati e una possibile tecnologia da utilizzare potrebbe essere Apache Beam che offre un modello di processamento dei dati sia streaming che batch. \\
+Con l'introduzione del layer per l'analisi batch, dai dati raccolti nell'analisi si potrebbe anche addestrare un modello di Machine Learning per contrastare problemi e malattie che possono influenzare lo stato di salute delle piante.
 
 \newpage
 
